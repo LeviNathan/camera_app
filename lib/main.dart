@@ -11,6 +11,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 
 class CameraExampleHome extends StatefulWidget {
   @override
@@ -19,7 +20,7 @@ class CameraExampleHome extends StatefulWidget {
   }
 }
 
-/// Returns a suitable camera icon for [direction].
+/// Returns a suitable camera icon for direction of camera.
 IconData getCameraLensIcon(CameraLensDirection direction) {
   switch (direction) {
     case CameraLensDirection.back:
@@ -113,7 +114,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 _cameraTogglesRowWidget(),
-                //_thumbnailWidget(),
+                _thumbnailWidget(),
               ],
             ),
           ),
@@ -297,7 +298,8 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     controller.addListener(() {
       if (mounted) setState(() {});
       if (controller.value.hasError) {
-        showInSnackBar('Camera error ${controller.value.errorDescription}');
+        showInSnackBar('Camera Error');
+        //showInSnackBar('Camera error ${controller.value.errorDescription}');
       }
     });
 
@@ -320,7 +322,9 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           videoController?.dispose();
           videoController = null;
         });
-        if (filePath != null) showInSnackBar('Picture saved to $filePath');
+        //if (filePath != null) showInSnackBar('Picture saved to $filePath');
+        showInSnackBar('Picture saved to Gallery');
+
       }
     });
   }
@@ -328,14 +332,15 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   void onVideoRecordButtonPressed() {
     startVideoRecording().then((String filePath) {
       if (mounted) setState(() {});
-      if (filePath != null) showInSnackBar('Saving video to $filePath');
+      //if (filePath != null) showInSnackBar('Saving video to $filePath');
     });
   }
 
   void onStopButtonPressed() {
     stopVideoRecording().then((_) {
       if (mounted) setState(() {});
-      showInSnackBar('Video recorded to: $videoPath');
+      //showInSnackBar('Video recorded to: $videoPath');
+      showInSnackBar('Video saved to Gallery');
     });
   }
 
@@ -387,6 +392,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
     try {
       await controller.stopVideoRecording();
+      GallerySaver.saveVideo(videoPath);
     } on CameraException catch (e) {
       _showCameraException(e);
       return null;
@@ -434,7 +440,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     vcontroller.addListener(videoPlayerListener);
     await vcontroller.setLooping(true);
     await vcontroller.initialize();
-    await videoController?.dispose();
+    final VideoPlayerController oldController = videoController;
     if (mounted) {
       setState(() {
         imagePath = null;
@@ -442,6 +448,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       });
     }
     await vcontroller.play();
+    await oldController?.dispose();
   }
 
   Future<String> takePicture() async {
@@ -461,6 +468,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
     try {
       await controller.takePicture(filePath);
+      GallerySaver.saveImage(filePath);
     } on CameraException catch (e) {
       _showCameraException(e);
       return null;
@@ -470,7 +478,8 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   void _showCameraException(CameraException e) {
     logError(e.code, e.description);
-    showInSnackBar('Error: ${e.code}\n${e.description}');
+    showInSnackBar('Uh oh');
+    //showInSnackBar('Error: ${e.code}\n${e.description}');
   }
 }
 

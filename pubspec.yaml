@@ -27,7 +27,7 @@ dependencies:
   path_provider:
   path:
   video_player:
-  esys_flutter_share:
+  gallery_saver:
 
 dev_dependencies:
   flutter_test:
